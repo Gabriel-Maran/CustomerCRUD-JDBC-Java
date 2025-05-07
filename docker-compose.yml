@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  db:
+    image: mysql
+    container_name: mysql-crud-java
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - customer-crud-data:/var/lib/mysql
+
+volumes:
+  customer-crud-data:
