@@ -3,6 +3,7 @@ package com.empresa.connection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 public class ConnectionFactory {
     public static Connection getConnection() throws SQLException {
@@ -13,5 +14,6 @@ public class ConnectionFactory {
         String password = "root";
 
         return DriverManager.getConnection(url, user, password);
+
     }
 }

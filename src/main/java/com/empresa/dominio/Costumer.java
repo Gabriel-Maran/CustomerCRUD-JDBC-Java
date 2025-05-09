@@ -1,19 +1,19 @@
 package com.empresa.dominio;
 
-public class Cliente {
+public class Costumer {
     private int id;
     private String nome;
     private String email;
     private String telefone;
 
 
-    public Cliente(int id, String nome, String email) {
+    public Costumer(int id, String nome, String email) {
         this.id = id;
         this.nome = nome;
         this.email = email;
     }
 
-    public Cliente(int id, String nome, String email, String telefone) {
+    public Costumer(int id, String nome, String email, String telefone) {
         this(id, nome, email);
         this.telefone = telefone;
     }
