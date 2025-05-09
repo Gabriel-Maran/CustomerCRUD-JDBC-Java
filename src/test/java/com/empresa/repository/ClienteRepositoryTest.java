@@ -1,6 +1,7 @@
 package com.empresa.repository;
 
 import com.empresa.dominio.Costumer;
+import com.empresa.exception.DatabaseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,9 +10,12 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 class ClienteRepositoryTest {
-    private Costumer cliente;
+    private Costumer existingCostumer;
     @BeforeEach
     void setUp() {
+        existingCostumer = new Costumer("Gabriel", "gabriel@gmail.com", "49999999999");
+        //If it's not registered
+//        CostumerRepository.save(existingCostumer);
     }
 
     @Test
@@ -31,7 +35,9 @@ class ClienteRepositoryTest {
 
 
     @Test
-    void save() {
-
+    void save_ThrowDatabaseException_WhenEmailIsAlreadyUsed() {
+        Costumer newCostumer = new Costumer("Gabriel", "gabriel@gmail.com", "49999999999");
+        Assertions.assertThrows(DatabaseException.class , () -> CostumerRepository.save(newCostumer),
+                "Must throw DatabaseExcetion, because there is a consumer registered with this email");
     }
 }

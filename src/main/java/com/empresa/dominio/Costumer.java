@@ -7,12 +7,19 @@ public class Costumer {
     private String telefone;
 
 
-    public Costumer(int id, String nome, String email) {
-        this.id = id;
+    public Costumer(String nome, String email) {
         this.nome = nome;
         this.email = email;
     }
+    public Costumer(int id, String nome, String email) {
+        this(nome, email);
+        this.id = id;
+    }
 
+    public Costumer(String nome, String email, String telefone) {
+        this(nome, email);
+        this.telefone = telefone;
+    }
     public Costumer(int id, String nome, String email, String telefone) {
         this(id, nome, email);
         this.telefone = telefone;

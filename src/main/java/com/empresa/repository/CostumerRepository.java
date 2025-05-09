@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.empresa.exception.EmailAlreadyPresent;
+import com.empresa.exception.DatabaseException;
 
 import java.sql.*;
 import java.util.Optional;
@@ -16,9 +17,8 @@ public class CostumerRepository {
     public static void save(Costumer costumer) {
         try (Connection conn = ConnectionFactory.getConnection()) {
             conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO Cliente (nome, email, telefone) VALUES (?, ?, ?)")) {
-
+            try (PreparedStatement ps = conn.prepareStatement
+                    ("INSERT INTO Cliente (nome, email, telefone) VALUES (?, ?, ?)")) {
                 ps.setString(1, costumer.getNome());
                 ps.setString(2, costumer.getEmail());
 
@@ -31,18 +31,17 @@ public class CostumerRepository {
                 ps.executeUpdate();
                 conn.commit(); // Confirma transação
                 log.info("Successfully saved {}", costumer.getNome());
-
             } catch (SQLException e) {
                 conn.rollback();
-                if (e.getSQLState().equals("23505")) {
-                    throw new EmailAlreadyPresent("Email is already registred" + costumer.getEmail());
+                if (e.getSQLState().equals("23505")) { // Will be true when its tried to insert a row that would violate a unique index
+                    throw new EmailAlreadyPresent("Error, email is already registred" + costumer.getEmail());
                 }
                 log.error("Error while trying to save the costumer: " + costumer.getNome(), e);
-                throw new RuntimeException(e);
+                throw new DatabaseException("Error while trying save a new Consumer", e);
             }
         } catch (SQLException e) {
             log.error("Error while trying to save {}", costumer.getNome());
-            throw new RuntimeException("Error while trying connecting to DataBase", e);
+            throw new DatabaseException("Error while trying connecting to DataBase", e);
         }
     }
 
@@ -58,9 +57,9 @@ public class CostumerRepository {
             Costumer costumer = extractCostumerFromResultSet(rs);
             return Optional.of(costumer);
         } catch (SQLException e) {
-            log.error("Error while trying to find costumer by id: {}", id, e);
+            log.error("Error finding customer by id: {}", id, e);
+            throw new DatabaseException("Error while trying to find the costumer", e);
         }
-        return Optional.empty();
     }
 
     private static PreparedStatement createFindById(Connection conn, int id) throws SQLException {
