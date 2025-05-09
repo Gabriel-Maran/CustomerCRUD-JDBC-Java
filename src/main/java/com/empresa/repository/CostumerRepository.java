@@ -77,4 +77,74 @@ public class CostumerRepository {
                 rs.getString("telefone")
         );
     }
+
+    public static Optional<Costumer> findByEmail(String email) {
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = createFindByEmail(conn, email);
+             ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) {
+                log.info("No costumer found with email: {}", email);
+                return Optional.empty();
+            }
+            Costumer costumer = extractCostumerFromResultSet(rs);
+            return Optional.of(costumer);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error while trying to find the costumer", e);
+        }
+    }
+
+    private static PreparedStatement createFindByEmail(Connection conn, String email) throws SQLException {
+        String sql = "SELECT * FROM Cliente WHERE email = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, email);
+        return ps;
+    }
+
+    public static void deleteById(int id) {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            Optional<Costumer> costumer = CostumerRepository.findById(id);
+            if (costumer.isEmpty()) {
+                log.info("Costumer not found with id: {}", id);
+                return;
+            }
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Cliente WHERE id = ?")) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+                conn.commit();
+                log.info("Successfully deleted {}", id);
+            } catch (SQLException e) {
+                conn.rollback();
+                log.error("Error while trying to dele the costumer with id: {}", id, e);
+                throw new DatabaseException("Error while trying to delete the costumer", e);
+            }
+        } catch (SQLException e) {
+            log.error("Error while trying to delete the costumer with id: {}", id, e);
+            throw new DatabaseException("Error while trying to connect to DataBase", e);
+        }
+    }
+
+    public static void deleteByEmail(String email) {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            Optional<Costumer> costumer = CostumerRepository.findByEmail(email);
+            if (costumer.isEmpty()) {
+                log.info("Costumer not found with email: {}", email);
+                return;
+            }
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Cliente WHERE email = ?")) {
+                ps.setString(1, email);
+                ps.executeUpdate();
+                conn.commit();
+                log.info("Successfully deleted {}", email);
+            }catch (SQLException e){
+                conn.rollback();
+                log.error("Error while trying to remove the costumer by email: {}", email, e);
+                throw new DatabaseException("Error while trying to remove the costumer", e);
+            }
+        } catch (SQLException e) {
+            log.error("Error while trying to delete user by email: {}", email, e);
+            throw new DatabaseException("Error while trying to connect to Database" + email, e);
+        }
+    }
 }
