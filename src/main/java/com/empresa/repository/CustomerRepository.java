@@ -1,7 +1,7 @@
 package com.empresa.repository;
 
 import com.empresa.connection.ConnectionFactory;
-import com.empresa.dominio.Costumer;
+import com.empresa.dominio.Customer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,54 +11,54 @@ import com.empresa.exception.DatabaseException;
 import java.sql.*;
 import java.util.Optional;
 
-public class CostumerRepository {
-    private static final Logger log = LogManager.getLogger(CostumerRepository.class);
+public class CustomerRepository {
+    private static final Logger log = LogManager.getLogger(CustomerRepository.class);
 
-    public static void save(Costumer costumer) {
+    public static void save(Customer customer) {
         try (Connection conn = ConnectionFactory.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement
                     ("INSERT INTO Cliente (nome, email, telefone) VALUES (?, ?, ?)")) {
-                ps.setString(1, costumer.getNome());
-                ps.setString(2, costumer.getEmail());
+                ps.setString(1, customer.getNome());
+                ps.setString(2, customer.getEmail());
 
-                if (costumer.getTelefone() != null) {
-                    ps.setString(3, costumer.getTelefone());
+                if (customer.getTelefone() != null) {
+                    ps.setString(3, customer.getTelefone());
                 } else {
                     ps.setNull(3, Types.VARCHAR);
                 }
 
                 ps.executeUpdate();
                 conn.commit(); // Confirma transação
-                log.info("Successfully saved {}", costumer.getNome());
+                log.info("Successfully saved {}", customer.getNome());
             } catch (SQLException e) {
                 conn.rollback();
                 if (e.getSQLState().equals("23505")) { // Will be true when its tried to insert a row that would violate a unique index
-                    throw new EmailAlreadyPresent("Error, email is already registred" + costumer.getEmail());
+                    throw new EmailAlreadyPresent("Error, email is already registred" + customer.getEmail());
                 }
-                log.error("Error while trying to save the costumer: " + costumer.getNome(), e);
+                log.error("Error while trying to save the customer: " + customer.getNome(), e);
                 throw new DatabaseException("Error while trying save a new Consumer", e);
             }
         } catch (SQLException e) {
-            log.error("Error while trying to save {}", costumer.getNome());
+            log.error("Error while trying to save {}", customer.getNome());
             throw new DatabaseException("Error while trying connecting to DataBase", e);
         }
     }
 
-    public static Optional<Costumer> findById(int id) {
+    public static Optional<Customer> findById(int id) {
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = createFindById(conn, id);
              ResultSet rs = ps.executeQuery()) {
-            log.info("Finding costumer id: {}", id);
+            log.info("Finding customer id: {}", id);
             if (!rs.next()) {
-                log.info("No costumer found with id: {}", id);
+                log.info("No customer found with id: {}", id);
                 return Optional.empty();
             }
-            Costumer costumer = extractCostumerFromResultSet(rs);
-            return Optional.of(costumer);
+            Customer customer = extractCostumerFromResultSet(rs);
+            return Optional.of(customer);
         } catch (SQLException e) {
             log.error("Error finding customer by id: {}", id, e);
-            throw new DatabaseException("Error while trying to find the costumer", e);
+            throw new DatabaseException("Error while trying to find the customer", e);
         }
     }
 
@@ -69,8 +69,8 @@ public class CostumerRepository {
         return ps;
     }
 
-    private static Costumer extractCostumerFromResultSet(ResultSet rs) throws SQLException {
-        return new Costumer(
+    private static Customer extractCostumerFromResultSet(ResultSet rs) throws SQLException {
+        return new Customer(
                 rs.getInt("id"),
                 rs.getString("nome"),
                 rs.getString("email"),
@@ -78,18 +78,18 @@ public class CostumerRepository {
         );
     }
 
-    public static Optional<Costumer> findByEmail(String email) {
+    public static Optional<Customer> findByEmail(String email) {
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = createFindByEmail(conn, email);
              ResultSet rs = ps.executeQuery()) {
             if (!rs.next()) {
-                log.info("No costumer found with email: {}", email);
+                log.info("No customer found with email: {}", email);
                 return Optional.empty();
             }
-            Costumer costumer = extractCostumerFromResultSet(rs);
-            return Optional.of(costumer);
+            Customer customer = extractCostumerFromResultSet(rs);
+            return Optional.of(customer);
         } catch (SQLException e) {
-            throw new DatabaseException("Error while trying to find the costumer", e);
+            throw new DatabaseException("Error while trying to find the customer", e);
         }
     }
 
@@ -102,9 +102,9 @@ public class CostumerRepository {
 
     public static void deleteById(int id) {
         try (Connection conn = ConnectionFactory.getConnection()) {
-            Optional<Costumer> costumer = CostumerRepository.findById(id);
-            if (costumer.isEmpty()) {
-                log.info("Costumer not found with id: {}", id);
+            Optional<Customer> customer = CustomerRepository.findById(id);
+            if (customer.isEmpty()) {
+                log.info("Customer not found with id: {}", id);
                 return;
             }
             conn.setAutoCommit(false);
@@ -115,20 +115,20 @@ public class CostumerRepository {
                 log.info("Successfully deleted {}", id);
             } catch (SQLException e) {
                 conn.rollback();
-                log.error("Error while trying to dele the costumer with id: {}", id, e);
-                throw new DatabaseException("Error while trying to delete the costumer", e);
+                log.error("Error while trying to dele the customer with id: {}", id, e);
+                throw new DatabaseException("Error while trying to delete the customer", e);
             }
         } catch (SQLException e) {
-            log.error("Error while trying to delete the costumer with id: {}", id, e);
+            log.error("Error while trying to delete the customer with id: {}", id, e);
             throw new DatabaseException("Error while trying to connect to DataBase", e);
         }
     }
 
     public static void deleteByEmail(String email) {
         try (Connection conn = ConnectionFactory.getConnection()) {
-            Optional<Costumer> costumer = CostumerRepository.findByEmail(email);
-            if (costumer.isEmpty()) {
-                log.info("Costumer not found with email: {}", email);
+            Optional<Customer> customer = CustomerRepository.findByEmail(email);
+            if (customer.isEmpty()) {
+                log.info("Customer not found with email: {}", email);
                 return;
             }
             conn.setAutoCommit(false);
@@ -139,8 +139,8 @@ public class CostumerRepository {
                 log.info("Successfully deleted {}", email);
             }catch (SQLException e){
                 conn.rollback();
-                log.error("Error while trying to remove the costumer by email: {}", email, e);
-                throw new DatabaseException("Error while trying to remove the costumer", e);
+                log.error("Error while trying to remove the customer by email: {}", email, e);
+                throw new DatabaseException("Error while trying to remove the customer", e);
             }
         } catch (SQLException e) {
             log.error("Error while trying to delete user by email: {}", email, e);

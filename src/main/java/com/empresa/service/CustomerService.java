@@ -1,5 +1,5 @@
 package com.empresa.service;
 
-public class CostumerService {
+public class CustomerService {
 
 }
