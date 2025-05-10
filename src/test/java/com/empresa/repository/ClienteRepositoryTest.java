@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 class ClienteRepositoryTest {
-    private Customer existingCostumer;
+    private Customer existingCustomer;
     @BeforeEach
     void setUp() {
-        existingCostumer = new Customer("Gabriel", "gabriel@gmail.com", "49999999999");
+        existingCustomer = new Customer("Gabriel", "gabriel@gmail.com", "49999999999");
         //If it's not registered
 //        CostumerRepository.save(existingCostumer);
     }
@@ -51,10 +51,14 @@ class ClienteRepositoryTest {
     @Test
     @DisplayName("Should throw DatabaseException when creating customer with existing email")
     void save_ThrowDatabaseException_WhenEmailIsAlreadyUsed() {
-        Customer newCostumer = new Customer("Gabriel", "gabriel@gmail.com", "49999999999");
-        Assertions.assertThrows(DatabaseException.class , () -> CustomerRepository.save(newCostumer),
+        Assertions.assertThrows(DatabaseException.class , () -> CustomerRepository.save(existingCustomer),
                 "Must throw DatabaseExcetion, because there is a consumer registered with this email");
     }
 
-
+    @Test
+    @DisplayName("Should throw DatabaseException when creating customer with existing email")
+    void update_ThrowDatabaseException_WhenEmailIsAlreadyUsed() {
+        Assertions.assertThrows(DatabaseException.class, () -> CustomerRepository.updateById(2, existingCustomer),
+                "Must throw DatabaseException, because there is a consumer registered with this email");
+    }
 }

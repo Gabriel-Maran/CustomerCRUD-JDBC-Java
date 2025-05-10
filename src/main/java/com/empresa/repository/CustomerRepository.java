@@ -34,7 +34,7 @@ public class CustomerRepository {
             } catch (SQLException e) {
                 conn.rollback();
                 if (e.getSQLState().equals("23505")) { // Will be true when its tried to insert a row that would violate a unique index
-                    throw new EmailAlreadyPresent("Error, email is already registred" + customer.getEmail());
+                    throw new EmailAlreadyPresent("Error, email is already registered" + customer.getEmail());
                 }
                 log.error("Error while trying to save the customer: " + customer.getNome(), e);
                 throw new DatabaseException("Error while trying save a new Consumer", e);
@@ -79,6 +79,9 @@ public class CustomerRepository {
     }
 
     public static Optional<Customer> findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = createFindByEmail(conn, email);
              ResultSet rs = ps.executeQuery()) {
@@ -125,6 +128,9 @@ public class CustomerRepository {
     }
 
     public static void deleteByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
         try (Connection conn = ConnectionFactory.getConnection()) {
             Optional<Customer> customer = CustomerRepository.findByEmail(email);
             if (customer.isEmpty()) {
@@ -137,7 +143,7 @@ public class CustomerRepository {
                 ps.executeUpdate();
                 conn.commit();
                 log.info("Successfully deleted {}", email);
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 conn.rollback();
                 log.error("Error while trying to remove the customer by email: {}", email, e);
                 throw new DatabaseException("Error while trying to remove the customer", e);
@@ -145,6 +151,37 @@ public class CustomerRepository {
         } catch (SQLException e) {
             log.error("Error while trying to delete user by email: {}", email, e);
             throw new DatabaseException("Error while trying to connect to Database" + email, e);
+        }
+    }
+
+    public static void updateById(int id, Customer customer) {
+        Optional<Customer> customer1 = findById(id);
+        if (customer1.isEmpty()) return;
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement("UPDATE Cliente SET nome = ?, email = ?, telefone = ? WHERE id = ?")) {
+                ps.setString(1, customer.getNome());
+                ps.setString(2, customer.getEmail());
+                if (customer.getTelefone() != null) {
+                    ps.setString(3, customer.getTelefone());
+                } else {
+                    ps.setNull(3, Types.VARCHAR);
+                }
+                ps.setInt(4, id);
+                ps.executeUpdate();
+                conn.commit();
+                log.info("Successfully updated {}", customer.getNome());
+            } catch (SQLException e) {
+                conn.rollback();
+                if (e.getSQLState().equals("23505")) {
+                    throw new EmailAlreadyPresent("Error, email is already registered" + customer.getEmail());
+                }
+                log.error("Error while trying to update the customer with id: {}", id, e);
+                throw new DatabaseException("Error while trying to update the customer", e);
+            }
+        } catch (SQLException e) {
+            log.error("Error while trying to update the customer with id: {}", id, e);
+            throw new DatabaseException("Error while trying to connecting to DataBase", e);
         }
     }
 }
