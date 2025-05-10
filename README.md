@@ -29,7 +29,6 @@ Core CRUD functionality complete, but subject to refactoring as:
 - [ ] Implement robust error handling
 - [ ] Add input validation
 - [ ] Create unit tests
-- [ ] Implement connection pooling
 
 ## Installation & Setup 🚀
 
