@@ -9,6 +9,8 @@ import com.empresa.exception.EmailAlreadyPresent;
 import com.empresa.exception.DatabaseException;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class CustomerRepository {
@@ -54,7 +56,7 @@ public class CustomerRepository {
                 log.info("No customer found with id: {}", id);
                 return Optional.empty();
             }
-            Customer customer = extractCostumerFromResultSet(rs);
+            Customer customer = extractCustomerFromResultSet(rs);
             return Optional.of(customer);
         } catch (SQLException e) {
             log.error("Error finding customer by id: {}", id, e);
@@ -69,7 +71,7 @@ public class CustomerRepository {
         return ps;
     }
 
-    private static Customer extractCostumerFromResultSet(ResultSet rs) throws SQLException {
+    private static Customer extractCustomerFromResultSet(ResultSet rs) throws SQLException {
         return new Customer(
                 rs.getInt("id"),
                 rs.getString("nome"),
@@ -89,7 +91,7 @@ public class CustomerRepository {
                 log.info("No customer found with email: {}", email);
                 return Optional.empty();
             }
-            Customer customer = extractCostumerFromResultSet(rs);
+            Customer customer = extractCustomerFromResultSet(rs);
             return Optional.of(customer);
         } catch (SQLException e) {
             throw new DatabaseException("Error while trying to find the customer", e);
@@ -100,6 +102,27 @@ public class CustomerRepository {
         String sql = "SELECT * FROM Cliente WHERE email = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, email);
+        return ps;
+    }
+
+    public static List<Customer> findAll() {
+        List<Customer> customers = new ArrayList<>();
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = createFindAll(conn);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Customer customer = extractCustomerFromResultSet(rs);
+                customers.add(customer);
+            }
+            return customers;
+        } catch (SQLException e) {
+            throw new DatabaseException("Error while trying to find all customers", e);
+        }
+    }
+
+    private static PreparedStatement createFindAll(Connection conn) throws SQLException {
+        String sql = "SELECT * FROM Cliente";
+        PreparedStatement ps = conn.prepareStatement(sql);
         return ps;
     }
 
