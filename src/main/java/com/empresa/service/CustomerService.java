@@ -20,7 +20,7 @@ public class CustomerService {
     private static final String REGEXTELEFONE = "^\\(?[1-9]{2}\\)?\\s?(?:9\\d{4}|\\d{4})[-\\s]?\\d{4}$";
 
 
-    public void menu(int escolha) {
+    public static void menu(int escolha) {
         switch (escolha) {
             case 1:
                 findAll();
@@ -40,6 +40,14 @@ public class CustomerService {
             case 6:
                 updateById();
                 break;
+            case 7:
+                saveNewCustomer();
+                break;
+            case 0:
+                System.out.println("Ending program...");
+                break;
+            default:
+                throw new InputMismatchException();
         }
     }
 
@@ -48,7 +56,6 @@ public class CustomerService {
     }
 
     private static void findById() {
-
         String id = "0";
         do {
             System.out.println("Type the id of the customer you want to search: ");
@@ -95,7 +102,6 @@ public class CustomerService {
     private static void updateById() {
         String id = "0";
         int choose = 0;
-        Customer customer;
         do {
             System.out.println("Type the id of the customer you want to update: ");
             id = SCANNER.nextLine();
@@ -105,11 +111,11 @@ public class CustomerService {
             System.out.println("Customer not found!");
             return;
         }
-        CustomerRepository.updateById(Integer.parseInt(id), getNewCustomer());
+        Customer customer = getNewCustomerToUpdate(existingCustomer.get());
+        CustomerRepository.updateById(Integer.parseInt(id), customer);
     }
 
-    private static Customer getNewCustomer() {
-        Customer customer = new Customer("", "", "");
+    private static Customer getNewCustomerToUpdate(Customer customer) {
         int choose = 0;
         do {
             choose = getUpdateChoose();
@@ -125,6 +131,14 @@ public class CustomerService {
                     break;
             }
         } while (choose != 0);
+        return customer;
+    }
+
+    private static Customer getNewCustomer() {
+        Customer customer = new Customer("", "", "");
+        getNewName(customer);
+        getNewEmail(customer);
+        getNewTelephone(customer);
         return customer;
     }
 
@@ -167,10 +181,14 @@ public class CustomerService {
 
     private static void getNewTelephone(Customer customer) {
         String telefone;
-        do {
-            System.out.println("Type the new telephone of the customer:");
-            telefone = SCANNER.nextLine();
-        } while (!telefone.matches(REGEXTELEFONE));
+        System.out.println("Type the new telephone of the customer:");
+        telefone = SCANNER.nextLine();
         customer.setTelefone(telefone);
+    }
+
+    private static void saveNewCustomer() {
+        Customer newCustomer = getNewCustomer();
+        CustomerRepository.save(newCustomer);
+        System.out.println("Customer saved!");
     }
 }

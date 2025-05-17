@@ -11,6 +11,7 @@ public class Customer {
         this.nome = nome;
         this.email = email;
     }
+
     public Customer(int id, String nome, String email) {
         this(nome, email);
         this.id = id;
@@ -20,6 +21,7 @@ public class Customer {
         this(nome, email);
         this.telefone = telefone;
     }
+
     public Customer(int id, String nome, String email, String telefone) {
         this(id, nome, email);
         this.telefone = telefone;
@@ -55,5 +57,15 @@ public class Customer {
 
     public void setTelefone(String telefone) {
         this.telefone = telefone;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", telefone='" + telefone + '\'' +
+                '}';
     }
 }
