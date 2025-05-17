@@ -27,8 +27,8 @@ Core CRUD functionality complete, but subject to refactoring as:
 - [x] Basic MySQL connection
 - [x] Functional CRUD operations
 - [ ] Implement robust error handling
-- [ ] Add input validation
-- [ ] Create unit tests
+- [x] Add input validation
+- [x] Create unit tests
 
 ## Installation & Setup 🚀
 
